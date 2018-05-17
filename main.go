@@ -1,16 +1,19 @@
 package main
 
 import (
-	"github.com/firstimedeveloper/task/cmd"
-	"github.com/boltdb/bolt"
+	"path/filepath"
 
+	"github.com/firstimedeveloper/task/cmd"
+	"github.com/firstimedeveloper/task/db"
+	"github.com/mitchellh/go-homedir"
 )
 
 func main() {
-	db, err := bolt.Open("my.db", 0600, nil)
+	home, _ := homedir.Dir()
+	dbPath := filepath.Join(home, "tasks.db")
+	err := db.Init(dbPath)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
-	defer db.Close()
 	cmd.Execute()
 }

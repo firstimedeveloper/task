@@ -1,11 +1,10 @@
 package cmd
 
 import (
-	"fmt"
+	"strings"
 
+	"github.com/firstimedeveloper/task/db"
 	"github.com/spf13/cobra"
-	"github.com/boltdb/bolt"
-
 )
 
 func init() {
@@ -13,16 +12,10 @@ func init() {
 }
 
 var addCmd = &cobra.Command{
-	Use:   "add",
+	Use:   "add [task]",
 	Short: "Add a new task",
+	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("TODO: add task")
-
+		db.AddTask(strings.Join(args, " "))
 	},
-}
-
-func addTask() {
-	db.Update(func(tx *bolt.Tx) error {
-		b, err := tx.CreateBucket([])
-	})	
 }

@@ -3,9 +3,8 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/firstimedeveloper/task/db"
 	"github.com/spf13/cobra"
-	"github.com/boltdb/bolt"
-
 )
 
 func init() {
@@ -16,19 +15,10 @@ var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List current tasks",
 	Run: func(cmd *cobra.Command, args []string) {
-		//fmt.Println("TODO: List current tasks")
-		listTasks()
-	},
-}
+		task, _ := db.ListTasks()
+		for _, t := range task {
+			fmt.Printf("%d: %s\n", t.Key, t.Value)
 
-func listTasks() {
-	db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte("tasks"))
-		c := b.Cursor()
-
-		for k, v := c.First(); k!= nil; k, v = c.Next() {
-			fmt.Printf("task %s: %s", k, v)
 		}
-		return nil
-	})
+	},
 }
