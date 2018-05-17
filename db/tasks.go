@@ -50,6 +50,11 @@ func AddTask(task string, nameOfBucket string) (int, error) {
 	err := db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(nameOfBucket))
 
+		// c := b.Cursor()
+		// for k,v := c.First(); k != nil; k,v := c.Next() {
+
+		// }
+
 		id64, _ := b.NextSequence()
 		id = int(id64)
 		key := itob(int(id64))
@@ -96,29 +101,49 @@ func DoneTask(num int) error {
 }
 
 //DeleteTask deletes a task specified by its taskNum
-func DeleteTask(num int) error {
+func DeleteTask(num int, nameOfBucket string) error {
 	err := db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(taskBucket)
+		b := tx.Bucket([]byte(nameOfBucket))
 		return b.Delete(itob(num))
 	})
 	return err
 }
 
-// //resetTasks resets the ordering of the tasks
-// func resetTasks(nameOfBucket string) error {
-// 	var tasks []Task
-// 	err := db.Update(func(tx *bolt.Tx) error {
-// 		b := tx.Bucket([]byte(nameOfBucket))
-// 		c := b.Cursor()
+// ResetTasks resets the ordering of the tasks
+func ResetTasks(nameOfBucket string) error {
+	var tasks []Task
+	err := db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(nameOfBucket))
 
-// 		for k, v := c.First(); k != nil; k, v = c.Next() {
-// 			tasks = append(tasks, Task{
-// 				Value: string(v),
-// 			})
-// 		}
+		var count = 1
+		return b.ForEach(func(k, v []byte) error {
+			value := b.Get(k)
+			tasks = append(tasks, Task{
+				Key:   count,
+				Value: string(value),
+			})
+			b.Delete(k)
+			count++
+			return nil
+		})
+		for _, t := range tasks {
+			b.Put(itob(t.Key), []byte(t.Value))
+		}
+		b.SetSequence(uint64(count))
+		return nil
+	})
 
-// 		return nil
-// 	})
+	return err
+}
 
-// 	return err
-// }
+func getLenBucket(nameOfBucket string) (int, error) {
+	var count int
+	err := db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(nameOfBucket))
+		return b.ForEach(func(k, v []byte) error {
+			count++
+			return nil
+		})
+	})
+	return count, err
+}
