@@ -8,17 +8,16 @@ import (
 )
 
 func init() {
-	rootCmd.AddCommand(listCmd)
+	rootCmd.AddCommand(compCmd)
 }
 
-var listCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List current tasks",
+var compCmd = &cobra.Command{
+	Use:   "comp",
+	Short: "List completed tasks",
 	Run: func(cmd *cobra.Command, args []string) {
-		task, _ := db.ListTasks("tasks")
+		task, _ := db.ListTasks("done")
 		for _, t := range task {
 			fmt.Printf("%d: %s\n", t.Key, t.Value)
-
 		}
 	},
 }

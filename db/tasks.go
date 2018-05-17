@@ -8,6 +8,7 @@ import (
 )
 
 var taskBucket = []byte("tasks")
+var doneBucket = []byte("done")
 var db *bolt.DB
 
 //Task is a struct that contains a Key and aValue
@@ -25,6 +26,8 @@ func Init(dbPath string) error {
 	}
 	return db.Update(func(tx *bolt.Tx) error {
 		_, err := tx.CreateBucketIfNotExists(taskBucket)
+		_, err = tx.CreateBucketIfNotExists(doneBucket)
+
 		return err
 	})
 }
@@ -42,10 +45,10 @@ func btoi(b []byte) int {
 }
 
 //AddTask takes a task of type string, adds the string to the database and returns an id (and an error)
-func AddTask(task string) (int, error) {
+func AddTask(task string, nameOfBucket string) (int, error) {
 	var id int
 	err := db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(taskBucket)
+		b := tx.Bucket([]byte(nameOfBucket))
 
 		id64, _ := b.NextSequence()
 		id = int(id64)
@@ -60,10 +63,10 @@ func AddTask(task string) (int, error) {
 }
 
 //ListTasks returns a slice of task structs (and an error)
-func ListTasks() ([]Task, error) {
+func ListTasks(nameOfBucket string) ([]Task, error) {
 	var tasks []Task
 	err := db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket(taskBucket)
+		b := tx.Bucket([]byte(nameOfBucket))
 		c := b.Cursor()
 
 		for k, v := c.First(); k != nil; k, v = c.Next() {
@@ -79,3 +82,43 @@ func ListTasks() ([]Task, error) {
 	}
 	return tasks, nil
 }
+
+//DoneTask takes in an integar (task number) and marks it complete (moves to doneBucket and deletes it)
+func DoneTask(num int) error {
+	err := db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket(taskBucket)
+		bDone := tx.Bucket(doneBucket)
+		value := b.Get(itob(num))
+		b.Delete(itob(num))
+		return bDone.Put(itob(num), []byte(value))
+	})
+	return err
+}
+
+//DeleteTask deletes a task specified by its taskNum
+func DeleteTask(num int) error {
+	err := db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket(taskBucket)
+		return b.Delete(itob(num))
+	})
+	return err
+}
+
+// //resetTasks resets the ordering of the tasks
+// func resetTasks(nameOfBucket string) error {
+// 	var tasks []Task
+// 	err := db.Update(func(tx *bolt.Tx) error {
+// 		b := tx.Bucket([]byte(nameOfBucket))
+// 		c := b.Cursor()
+
+// 		for k, v := c.First(); k != nil; k, v = c.Next() {
+// 			tasks = append(tasks, Task{
+// 				Value: string(v),
+// 			})
+// 		}
+
+// 		return nil
+// 	})
+
+// 	return err
+// }

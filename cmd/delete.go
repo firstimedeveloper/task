@@ -8,15 +8,14 @@ import (
 )
 
 func init() {
-	rootCmd.AddCommand(doneCmd)
+	rootCmd.AddCommand(deleteCmd)
 }
 
-var doneCmd = &cobra.Command{
-	Use:   "done [task #]",
-	Short: "Done with task",
-	Args:  cobra.MinimumNArgs(1),
+var deleteCmd = &cobra.Command{
+	Use:   "rm",
+	Short: "Delete specified task",
 	Run: func(cmd *cobra.Command, args []string) {
 		taskNum, _ := strconv.Atoi(args[0])
-		db.DoneTask(taskNum)
+		db.DeleteTask(taskNum)
 	},
 }

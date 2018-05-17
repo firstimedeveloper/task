@@ -16,6 +16,6 @@ var addCmd = &cobra.Command{
 	Short: "Add a new task",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		db.AddTask(strings.Join(args, " "))
+		db.AddTask(strings.Join(args, " "), "tasks")
 	},
 }
