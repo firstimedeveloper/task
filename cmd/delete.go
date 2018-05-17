@@ -12,7 +12,7 @@ func init() {
 }
 
 var deleteCmd = &cobra.Command{
-	Use:   "rm",
+	Use:   "delete [taskNum] optional(\"compl\")",
 	Short: "Delete specified task",
 	Run: func(cmd *cobra.Command, args []string) {
 		taskNum, _ := strconv.Atoi(args[0])

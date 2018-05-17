@@ -12,7 +12,7 @@ func init() {
 }
 
 var compCmd = &cobra.Command{
-	Use:   "comp",
+	Use:   "compl",
 	Short: "List completed tasks",
 	Run: func(cmd *cobra.Command, args []string) {
 		task, _ := db.ListTasks("done")
