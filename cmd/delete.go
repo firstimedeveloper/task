@@ -24,13 +24,13 @@ var deleteCmd = &cobra.Command{
 		if len(args) == 2 {
 			if args[1] == "compl" {
 				db.DeleteTask(taskNum, "done")
-				fmt.Printf("Deleted task %d in completed tasks list\n", taskNum)
+				fmt.Printf("Deleted item %d in completed tasks list\n", taskNum)
 			} else {
 				fmt.Println("Check your arguments")
 			}
 		} else {
 			db.DeleteTask(taskNum, "tasks")
-			fmt.Printf("Deleted task %d in task list\n", taskNum)
+			fmt.Printf("Deleted item %d in task list\n", taskNum)
 		}
 
 	},

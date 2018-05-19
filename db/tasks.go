@@ -70,6 +70,8 @@ func AddTask(task string, nameOfBucket string) (int, error) {
 //ListTasks returns a slice of task structs (and an error)
 func ListTasks(nameOfBucket string) ([]Task, error) {
 	var tasks []Task
+	resetTasks(nameOfBucket)
+
 	err := db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(nameOfBucket))
 		c := b.Cursor()
@@ -85,6 +87,7 @@ func ListTasks(nameOfBucket string) ([]Task, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return tasks, nil
 }
 
@@ -110,13 +113,13 @@ func DeleteTask(num int, nameOfBucket string) error {
 }
 
 // ResetTasks resets the ordering of the tasks
-func ResetTasks(nameOfBucket string) error {
+func resetTasks(nameOfBucket string) error {
 	var tasks []Task
 	err := db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(nameOfBucket))
 
 		var count = 1
-		return b.ForEach(func(k, v []byte) error {
+		err := b.ForEach(func(k, v []byte) error {
 			value := b.Get(k)
 			tasks = append(tasks, Task{
 				Key:   count,
@@ -130,10 +133,21 @@ func ResetTasks(nameOfBucket string) error {
 			b.Put(itob(t.Key), []byte(t.Value))
 		}
 		b.SetSequence(uint64(count))
-		return nil
+		return err
 	})
 
 	return err
+}
+
+//GetValueFromKey returns the corresponding task when given a taskNum in int
+func GetValueFromKey(taskNum int) (string, error) {
+	var value string
+	err := db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket(taskBucket)
+		value = string(b.Get(itob(taskNum)))
+		return nil
+	})
+	return value, err
 }
 
 func getLenBucket(nameOfBucket string) (int, error) {
